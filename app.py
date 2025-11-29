@@ -9,18 +9,13 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
-# Configure page (dengan viewport meta untuk mobile responsiveness)
+# Configure page - Optimized untuk LAPTOP (Desktop)
 st.set_page_config(
     page_title="Sistem Deteksi Penyakit",
     page_icon="🏥",
-    layout="centered",  # Gunakan centered untuk mobile, lebih baik dari wide
-    initial_sidebar_state="auto"  # Sidebar auto-collapse di mobile
+    layout="wide",  # Full-width untuk laptop
+    initial_sidebar_state="expanded"  # Sidebar selalu visible
 )
-
-# Inject viewport meta untuk mobile optimization
-st.markdown("""
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-""", unsafe_allow_html=True)
 
 # Load external CSS
 def load_css(file_path):
