@@ -25,10 +25,42 @@ def load_css(file_path):
 # Load CSS dari folder assets
 load_css('assets/styles.css')
 
+# Load symptom translations (English -> Indonesian)
+@st.cache_data
+def load_symptom_translations():
+    """Load translation mapping from CSV"""
+    translation_file = os.path.join('assets', 'symptom_translation.csv')
+    translation_dict = {}
+    
+    if os.path.isfile(translation_file):
+        try:
+            df_trans = pd.read_csv(translation_file, encoding='utf-8')
+            for _, row in df_trans.iterrows():
+                english = str(row['english_symptom']).strip().lower()
+                indonesian = str(row['indonesia_symptom']).strip()
+                translation_dict[english] = indonesian
+        except Exception as e:
+            st.warning(f"Failed to load translations: {e}")
+    
+    return translation_dict
+
+SYMPTOM_TRANSLATIONS = load_symptom_translations()
+
 # Fungsi untuk membersihkan nama gejala (ubah underscore jadi spasi, capitalize)
 def clean_symptom_name(symptom):
-    """Ubah format gejala dari 'abdominal_pain' menjadi 'Abdominal Pain'"""
-    return symptom.replace('_', ' ').title() if isinstance(symptom, str) else symptom
+    """Ubah format gejala dari 'abdominal_pain' menjadi Indonesian translation atau 'Abdominal Pain'"""
+    if not isinstance(symptom, str):
+        return symptom
+    
+    # Remove underscore and convert to lowercase for lookup
+    symptom_lower = symptom.replace('_', ' ').lower().strip()
+    
+    # Try to get Indonesian translation
+    if symptom_lower in SYMPTOM_TRANSLATIONS:
+        return SYMPTOM_TRANSLATIONS[symptom_lower]
+    
+    # Fallback: return title case English if no translation found
+    return symptom.replace('_', ' ').title()
 
 
 # Helper: normalisasi nama penyakit menjadi nama file yang mungkin
@@ -241,9 +273,9 @@ else:
     # Hapus duplikat
     all_symptoms = list(set(all_symptoms))
     
-    # Bersihkan nama gejala dan sorting alfabet
+    # Bersihkan nama gejala dan sorting alfabet (BAHASA INDONESIA)
     symptoms_clean = {clean_symptom_name(s): s for s in all_symptoms}  # Map clean name -> original
-    all_symptoms_sorted = sorted(symptoms_clean.keys())
+    all_symptoms_sorted = sorted(symptoms_clean.keys())  # Sorted by Indonesian names
     
     st.write(f'**Total gejala yang dikenali: {len(all_symptoms_sorted)}**')
 
