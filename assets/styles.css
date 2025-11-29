@@ -88,10 +88,125 @@ h3 {
 /* Button small adjustments */
 .stButton > button { box-shadow: 0 6px 18px rgba(103,58,183,0.12) }
 
-/* Responsive tweaks */
+/* Responsive tweaks - Tablet */
 @media (max-width: 900px) {
     .symptom-grid { grid-template-columns: repeat(2, 1fr); }
     .hero-inner { flex-direction: column; align-items: flex-start }
+    .hero-metrics { flex-direction: column; width: 100% }
+    .hero-metrics .metric-card { width: 100%; min-width: auto }
+}
+
+/* Mobile optimization (< 768px) */
+@media (max-width: 768px) {
+    /* Hero section */
+    .hero {
+        padding: 16px 12px;
+    }
+    .hero-inner {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .hero-brand {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    .logo {
+        width: 56px;
+        height: 56px;
+        font-size: 28px;
+    }
+    .hero-metrics {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    .hero-metrics .metric-card {
+        min-width: 100%;
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* Symptom grid - single column pada mobile */
+    .symptom-grid {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    .symptom-item {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+    
+    /* Text sizing */
+    h1 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+    h2 {
+        font-size: 18px;
+        padding-bottom: 8px;
+    }
+    h3 {
+        font-size: 16px;
+    }
+    
+    /* Button sizing */
+    .stButton > button {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    /* Card padding */
+    .disease-card, .result-card {
+        padding: 12px;
+        margin: 8px 0;
+    }
+    
+    /* Column padding */
+    .stColumn {
+        padding: 8px;
+    }
+    
+    /* Metric card text */
+    .metric-card {
+        padding: 12px;
+        font-size: 12px;
+    }
+    .metric-card h4 {
+        margin: 0 0 4px 0;
+        font-size: 12px;
+    }
+    .metric-card strong {
+        font-size: 18px;
+    }
+}
+
+/* Extra small mobile (< 480px) */
+@media (max-width: 480px) {
+    .main {
+        padding: 8px;
+    }
+    .hero {
+        padding: 12px 8px;
+    }
+    h1 {
+        font-size: 18px;
+    }
+    h2 {
+        font-size: 16px;
+    }
+    .logo {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+    .stButton > button {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    .subtitle {
+        font-size: 12px;
+    }
 }
 
 /* Symptom checkbox styling */
