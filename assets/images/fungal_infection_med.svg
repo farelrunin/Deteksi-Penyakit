@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120">
+  <rect rx="12" width="100%" height="100%" fill="#fff" opacity="0"/>
+  <g font-family="Segoe UI, Roboto, Arial">
+    <rect x="8" y="12" width="120" height="40" rx="8" fill="#f59e0b" />
+    <text x="12" y="36" font-size="12" fill="#fff">Antifungal</text>
+    <text x="12" y="78" font-size="14" fill="#111">Fungal Infection - Suggested meds</text>
+  </g>
+</svg>

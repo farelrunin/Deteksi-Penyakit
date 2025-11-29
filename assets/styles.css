@@ -1,0 +1,153 @@
+/* styles.css - Sistem Deteksi Penyakit */
+
+/* Main background */
+.main {
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.03), transparent),
+                linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1f2937;
+}
+
+/* Card styling */
+.disease-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #667eea;
+    transition: transform 0.2s;
+}
+
+.disease-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Title styling */
+h1 {
+    color: white;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+    padding-bottom: 10px;
+}
+
+h3 {
+    color: #667eea;
+}
+
+/* Hero */
+.hero {
+    background: transparent;
+    padding: 28px 24px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+}
+.hero-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+.hero-brand { display:flex; gap:16px; align-items:center }
+.logo {
+    width:72px;
+    height:72px;
+    border-radius:16px;
+    background: rgba(255,255,255,0.12);
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px;
+}
+.subtitle { color: rgba(255,255,255,0.9); margin-top:6px; }
+.hero-metrics { display:flex; gap:12px }
+.hero-metrics .metric-card { min-width:140px }
+
+/* Symptom grid (checkboxes) */
+.symptom-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; }
+.symptom-item { background: rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px }
+
+/* Result card */
+.result-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+    border-radius: 12px;
+    padding: 16px;
+    margin: 10px 0;
+    box-shadow: 0 6px 20px rgba(16,24,40,0.08);
+}
+
+/* Badges */
+.badge { display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; background:#eef2ff; color:#3730a3; margin-right:6px }
+
+/* Button small adjustments */
+.stButton > button { box-shadow: 0 6px 18px rgba(103,58,183,0.12) }
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+    .symptom-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-inner { flex-direction: column; align-items: flex-start }
+}
+
+/* Symptom checkbox styling */
+.stCheckbox {
+    margin: 8px 0;
+}
+
+/* Button styling */
+.stButton > button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    border: none;
+    padding: 12px 32px;
+    font-size: 16px;
+    width: 100%;
+    transition: transform 0.2s;
+}
+
+.stButton > button:hover {
+    transform: scale(1.02);
+}
+
+/* Metric styling */
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Container and alert styling */
+.stWarning, .stSuccess, .stInfo, .stError {
+    border-radius: 8px;
+}
+
+/* Container borders */
+.stContainer {
+    border-radius: 12px;
+}
+
+/* Text styling */
+.stMarkdown {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Columns */
+.stColumn {
+    padding: 15px;
+}
+
+/* Dataframe styling */
+.dataframe {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}

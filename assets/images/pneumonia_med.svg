@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120">
+  <rect rx="12" width="100%" height="100%" fill="#ffffff" opacity="0"/>
+  <g font-family="Segoe UI, Roboto, Arial">
+    <rect x="8" y="12" width="72" height="40" rx="8" fill="#10b981" />
+    <text x="12" y="36" font-size="12" fill="#fff">Antibiotic</text>
+    <text x="12" y="78" font-size="14" fill="#111">Pneumonia - Suggested meds</text>
+  </g>
+</svg>
