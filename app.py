@@ -336,10 +336,19 @@ else:
     selected_symptoms = []
     
     # Render checkboxes dengan optimasi (5 columns untuk desktop)
+    # Tambahkan kotak pencarian agar user dapat menemukan gejala tertentu
+    search_query = st.text_input('Cari gejala (ketik nama atau kata kunci untuk memfilter)')
+    # Jika search_query kosong, tampilkan semua gejala
+    if search_query and isinstance(search_query, str):
+        q = search_query.strip().lower()
+        visible_symptoms = [s for s in all_symptoms_sorted if q in s.lower()]
+    else:
+        visible_symptoms = all_symptoms_sorted
+
     num_cols = 5
     cols = st.columns(num_cols)
-    
-    for idx, symptom_clean in enumerate(all_symptoms_sorted):
+
+    for idx, symptom_clean in enumerate(visible_symptoms):
         col_idx = idx % num_cols
         with cols[col_idx]:
             if st.checkbox(symptom_clean, key=f"symptom_{symptom_clean}"):
