@@ -48,6 +48,26 @@ def load_symptom_translations():
 
 SYMPTOM_TRANSLATIONS = load_symptom_translations()
 
+# Load precaution translations (English -> Indonesian)
+@st.cache_data
+def load_precaution_translations():
+    translation_file = os.path.join('assets', 'precaution_translation.csv')
+    mp = {}
+    if os.path.isfile(translation_file):
+        try:
+            dfp = pd.read_csv(translation_file, encoding='utf-8')
+            # Normalize keys to lowercase stripped
+            for _, r in dfp.iterrows():
+                eng = str(r.get('english_precaution', '')).strip().lower()
+                ind = str(r.get('indonesia_precaution', '')).strip()
+                if eng:
+                    mp[eng] = ind if ind else r.get('english_precaution')
+        except Exception:
+            pass
+    return mp
+
+PRECAUTION_TRANSLATIONS = load_precaution_translations()
+
 # Fungsi untuk membersihkan nama gejala (ubah underscore jadi spasi, capitalize)
 def clean_symptom_name(symptom):
     """Ubah format gejala dari 'abdominal_pain' menjadi Indonesian translation atau 'Abdominal Pain'"""
@@ -174,7 +194,12 @@ def render_results(matching_diseases):
                     precautions = []
                     for col in ['Precaution_1', 'Precaution_2', 'Precaution_3', 'Precaution_4']:
                         if pd.notna(precaution.iloc[0][col]):
-                            precautions.append(f"• {precaution.iloc[0][col]}")
+                            raw = str(precaution.iloc[0][col]).strip()
+                            key = raw.lower()
+                            translated = PRECAUTION_TRANSLATIONS.get(key, '')
+                            # If translation exists and is non-empty use it, otherwise fallback to original
+                            use_text = translated if translated and str(translated).strip() else raw
+                            precautions.append(f"• {use_text}")
                     st.markdown("\n".join(precautions))
 
 
