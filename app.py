@@ -34,11 +34,13 @@ def load_symptom_translations():
     
     if os.path.isfile(translation_file):
         try:
-            df_trans = pd.read_csv(translation_file, encoding='utf-8')
-            for _, row in df_trans.iterrows():
-                english = str(row['english_symptom']).strip().lower()
-                indonesian = str(row['indonesia_symptom']).strip()
-                translation_dict[english] = indonesian
+            # Use efficient pandas read with only needed columns
+            df_trans = pd.read_csv(translation_file, encoding='utf-8', usecols=['english_symptom', 'indonesia_symptom'])
+            # Convert to dict efficiently (vectorized)
+            translation_dict = dict(zip(
+                df_trans['english_symptom'].str.lower().str.strip(),
+                df_trans['indonesia_symptom'].str.strip()
+            ))
         except Exception as e:
             st.warning(f"Failed to load translations: {e}")
     
@@ -210,6 +212,33 @@ def load_data():
 # Memuat data
 df_symptoms, df_precaution = load_data()
 
+# Cache symptoms extraction & cleaning (OPTIMIZED) - defined before usage
+@st.cache_data
+def extract_and_clean_symptoms(df_symptoms_input):
+    """Extract and clean symptoms from dataset"""
+    all_symptoms = []
+    for col in df_symptoms_input.columns:
+        if col.startswith('Symptom_'):
+            symptoms = df_symptoms_input[col].dropna().unique()
+            # IMPORTANT: Strip whitespace from each symptom
+            symptoms = [str(s).strip() for s in symptoms if pd.notna(s)]
+            all_symptoms.extend(symptoms)
+    
+    # Hapus duplikat
+    all_symptoms = list(set(all_symptoms))
+    
+    # Bersihkan nama gejala dan sorting alfabet (BAHASA INDONESIA)
+    symptoms_clean = {clean_symptom_name(s): s for s in all_symptoms}
+    all_symptoms_sorted = sorted(symptoms_clean.keys())
+    
+    return all_symptoms_sorted, symptoms_clean
+
+# Preload symptoms if data exists
+if not df_symptoms.empty:
+    all_symptoms_sorted_cache, symptoms_clean_cache = extract_and_clean_symptoms(df_symptoms)
+else:
+    all_symptoms_sorted_cache, symptoms_clean_cache = [], {}
+
 # Menampilkan informasi awal data — hero banner
 st.markdown(f"""
 <div class="hero">
@@ -263,19 +292,9 @@ else:
     with col2:
         st.metric("Total Penyakit Unik", df_symptoms['Disease'].nunique())
     
-    # Ekstrak semua gejala unik dari dataset
-    all_symptoms = []
-    for col in df_symptoms.columns:
-        if col.startswith('Symptom_'):
-            symptoms = df_symptoms[col].dropna().unique()
-            all_symptoms.extend(symptoms)
-    
-    # Hapus duplikat
-    all_symptoms = list(set(all_symptoms))
-    
-    # Bersihkan nama gejala dan sorting alfabet (BAHASA INDONESIA)
-    symptoms_clean = {clean_symptom_name(s): s for s in all_symptoms}  # Map clean name -> original
-    all_symptoms_sorted = sorted(symptoms_clean.keys())  # Sorted by Indonesian names
+    # Use preloaded symptoms
+    all_symptoms_sorted = all_symptoms_sorted_cache
+    symptoms_clean = symptoms_clean_cache
     
     st.write(f'**Total gejala yang dikenali: {len(all_symptoms_sorted)}**')
 
@@ -288,112 +307,20 @@ else:
     st.markdown("## 🔍 Pilih Gejala Anda")
     st.markdown("**Centang semua gejala yang Anda rasakan:**")
     
-    # Buat container dengan background
-    # selected_symptoms didefinisikan di sini agar dapat digunakan juga untuk input manual di bawah
+    # selected_symptoms: akan diupdate dari checkbox selections
     selected_symptoms = []
-    with st.container():
-        # Buat multiple checkbox untuk gejala
-        # Tampilkan gejala dalam kolom untuk kemudahan
-        num_cols = 4
-        cols = st.columns(num_cols)
-        
-        for idx, symptom_clean in enumerate(all_symptoms_sorted):
-            col_idx = idx % num_cols
-            with cols[col_idx]:
-                if st.checkbox(symptom_clean, key=f"symptom_{symptom_clean}"):
-                    # Simpan nama asli gejala (dengan underscore) untuk proses
-                    selected_symptoms.append(symptoms_clean[symptom_clean])
-
-    # Input manual untuk gejala yang tidak ada di daftar (boleh banyak, pisahkan dengan koma)
-    st.markdown("---")
-    st.markdown("**Gejala lain (tidak ada di daftar)?**")
-    bulk_input = st.text_area('Masukkan satu atau lebih gejala, pisahkan dengan koma atau baris baru (mis. flu, pusing, demam ringan)')
-    add_manual = st.button('Tambah Daftar Gejala')
-    if add_manual and bulk_input.strip():
-        # split by comma, semicolon or newline
-        tokens = [t.strip() for t in re.split('[,;\n]+', bulk_input) if t.strip()]
-        # pending entries used when confirm_before_map == True
-        pending = []
-        auto_mapped = []
-        added = []
-        ambiguous = []
-
-        for tok in tokens:
-            tok_clean_display = clean_symptom_name(tok)
-            matches = difflib.get_close_matches(tok_clean_display, all_symptoms_sorted, n=5, cutoff=float(fuzzy_cutoff))
-            entry = {
-                'token': tok,
-                'display': tok_clean_display,
-                'matches': matches
-            }
-            pending.append(entry)
-
-        if confirm_before_map:
-            # simpan pending di session_state agar bisa dikonfirmasi
-            st.session_state['pending_mappings'] = pending
-            st.markdown('**Pratinjau mapping — pilih tindakan untuk setiap input:**')
-            selections = []
-            for i, e in enumerate(pending):
-                label = f"Input: {e['token']}"
-                options = ['__TAMBAHKAN_MANUAL__'] + e['matches'] if e['matches'] else ['__TAMBAHKAN_MANUAL__']
-                choice = st.selectbox(label, options, index=1 if len(options) > 1 else 0, key=f"pending_choice_{i}")
-                selections.append((e, choice))
-
-            if st.button('Konfirmasi mapping dan tambahkan ke gejala terpilih'):
-                for e, choice in selections:
-                    tok = e['token']
-                    if choice == '__TAMBAHKAN_MANUAL__':
-                        manual_key = tok.lower().replace(' ', '_')
-                        selected_symptoms.append(manual_key)
-                        added.append((tok, manual_key))
-                    else:
-                        original = symptoms_clean.get(choice)
-                        if original:
-                            selected_symptoms.append(original)
-                            auto_mapped.append((tok, choice))
-                        else:
-                            manual_key = tok.lower().replace(' ', '_')
-                            selected_symptoms.append(manual_key)
-                            added.append((tok, manual_key))
-
-                if auto_mapped:
-                    st.success(f"Mapped {len(auto_mapped)} input ke gejala yang dikenal: {', '.join(f'{a}→{b}' for a,b in auto_mapped)}")
-                if added:
-                    st.info(f"Ditambahkan {len(added)} gejala manual: {', '.join(a for a,_ in added)}")
-                # clear pending
-                st.session_state.pop('pending_mappings', None)
-
-        else:
-            # langsung lakukan mapping otomatis berdasarkan ambang fuzzy_cutoff
-            for e in pending:
-                tok = e['token']
-                matches = e['matches']
-                if matches:
-                    top = matches[0]
-                    original = symptoms_clean.get(top)
-                    if original:
-                        selected_symptoms.append(original)
-                        auto_mapped.append((tok, top))
-                    else:
-                        manual_key = tok.lower().replace(' ', '_')
-                        selected_symptoms.append(manual_key)
-                        added.append((tok, manual_key))
-                    if len(matches) > 1:
-                        ambiguous.append((tok, matches))
-                else:
-                    manual_key = tok.lower().replace(' ', '_')
-                    selected_symptoms.append(manual_key)
-                    added.append((tok, manual_key))
-
-            # feedback ke user
-            if auto_mapped:
-                st.success(f"Mapped {len(auto_mapped)} input ke gejala yang dikenal: {', '.join(f'{a}→{b}' for a,b in auto_mapped)}")
-            if added:
-                st.info(f"Ditambahkan {len(added)} gejala manual: {', '.join(a for a,_ in added)}")
-            if ambiguous:
-                st.warning('Beberapa input memiliki kemungkinan kecocokan lain:')
-                for tok, options in ambiguous:
-                    st.write(f"- {tok}: kemungkinan -> {', '.join(options)}")
+    
+    # Render checkboxes dengan optimasi (5 columns untuk desktop)
+    num_cols = 5
+    cols = st.columns(num_cols)
+    
+    for idx, symptom_clean in enumerate(all_symptoms_sorted):
+        col_idx = idx % num_cols
+        with cols[col_idx]:
+            if st.checkbox(symptom_clean, key=f"symptom_{symptom_clean}"):
+                selected_symptoms.append(symptoms_clean[symptom_clean])
+    # Manual input removed per user request (simplified UI)
+    # Previously allowed adding arbitrary symptoms via text input; removed to simplify experience.
     
     # Tombol untuk prediksi dengan styling
     st.write('---')
@@ -420,7 +347,9 @@ else:
                         disease_symptom_map[disease] = set()
                     for col in df_symptoms.columns:
                         if col.startswith('Symptom_') and pd.notna(row[col]):
-                            disease_symptom_map[disease].add(row[col])
+                            # IMPORTANT: Strip whitespace from symptoms
+                            symptom_clean = str(row[col]).strip()
+                            disease_symptom_map[disease].add(symptom_clean)
 
                 matching_diseases = []
                 for disease, disease_symptoms in disease_symptom_map.items():
