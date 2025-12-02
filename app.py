@@ -470,10 +470,15 @@ else:
 
                 # --- Reset controls ---
                 def clear_symptom_selections():
-                    keys = list(st.session_state.keys())
+                    # Remove symptom keys from session_state so Streamlit will recreate
+                    # the checkboxes with their default (unchecked) state on rerun.
+                    keys = [k for k in list(st.session_state.keys()) if isinstance(k, str) and k.startswith('symptom__')]
                     for k in keys:
-                        if isinstance(k, str) and k.startswith('symptom__'):
-                            st.session_state[k] = False
+                        try:
+                            del st.session_state[k]
+                        except Exception:
+                            # ignore if unable to delete
+                            pass
 
                 # Show manual reset button so user can clear selections and start a new prediction
                 with st.container():
