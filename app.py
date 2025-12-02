@@ -326,6 +326,8 @@ else:
     # Kontrol di sidebar: ambang fuzzy dan konfirmasi sebelum mapping
     fuzzy_cutoff = st.sidebar.slider('Ambang kecocokan fuzzy', min_value=0.50, max_value=0.95, value=0.70, step=0.05)
     confirm_before_map = st.sidebar.checkbox('Minta konfirmasi sebelum memetakan otomatis', value=False)
+    # Opsi: otomatis reset centang setelah melakukan prediksi
+    auto_reset_after_prediction = st.sidebar.checkbox('Reset otomatis setelah prediksi', value=False)
     
     # Section untuk input gejala dengan styling
     st.write('---')
@@ -465,3 +467,24 @@ else:
                         st.download_button(label='Unduh TXT (ringkasan)', data=txt, file_name='hasil_prediksi.txt', mime='text/plain')
                 else:
                     st.warning('⚠️ Tidak ada penyakit yang cocok dengan gejala yang dipilih. Silakan coba gejala lain.')
+
+                # --- Reset controls ---
+                def clear_symptom_selections():
+                    keys = list(st.session_state.keys())
+                    for k in keys:
+                        if isinstance(k, str) and k.startswith('symptom__'):
+                            st.session_state[k] = False
+
+                # Show manual reset button so user can clear selections and start a new prediction
+                with st.container():
+                    col_a, col_b = st.columns([3,1])
+                    with col_a:
+                        if st.button('🔄 Reset Pilihan (kosongkan centang)', use_container_width=True):
+                            clear_symptom_selections()
+                            st.experimental_rerun()
+                    with col_b:
+                        if auto_reset_after_prediction:
+                            # If user opted for auto reset, perform it now (note: this will rerun and
+                            # therefore the current result display will be cleared).
+                            clear_symptom_selections()
+                            st.experimental_rerun()
