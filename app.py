@@ -348,11 +348,29 @@ else:
     num_cols = 5
     cols = st.columns(num_cols)
 
+    # Render checkboxes with stable keys based on original symptom token (to avoid duplicate keys
+    # when multiple display names map to same translation). Use session_state so selections persist
+    # even when the visible list is filtered.
     for idx, symptom_clean in enumerate(visible_symptoms):
         col_idx = idx % num_cols
         with cols[col_idx]:
-            if st.checkbox(symptom_clean, key=f"symptom_{symptom_clean}"):
-                selected_symptoms.append(symptoms_clean[symptom_clean])
+            original_token = symptoms_clean.get(symptom_clean)
+            if not isinstance(original_token, str):
+                original_token = str(original_token)
+            # create a stable key using original token (underscored form)
+            cb_key = f"symptom__{original_token}"
+            # ensure default in session_state
+            if cb_key not in st.session_state:
+                st.session_state[cb_key] = False
+            checked = st.checkbox(symptom_clean, value=st.session_state[cb_key], key=cb_key)
+
+    # Rebuild selected_symptoms from session_state so selection persists across filters
+    selected_symptoms = []
+    all_originals = set(symptoms_clean.values())
+    for orig in all_originals:
+        key = f"symptom__{orig}"
+        if st.session_state.get(key, False):
+            selected_symptoms.append(orig)
     # Manual input removed per user request (simplified UI)
     # Previously allowed adding arbitrary symptoms via text input; removed to simplify experience.
     
